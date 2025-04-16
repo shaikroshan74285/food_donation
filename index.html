@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eFoodDonation - Connecting Food to Those in Need</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Important Notice</h3>
+            <p>The data in this website may not be 100% accurate. Please be cautious when visiting unknown locations, especially at night times.</p>
+            <button id="understandBtn">I Understand</button>
+        </div>
+    </div>
+
+    <!-- Image Upload Warning Modal -->
+    <div id="imageWarningModal" class="modal">
+        <div class="modal-content">
+            <span class="close-image-warning">&times;</span>
+            <h3>Image Upload Notice</h3>
+            <p>Because of data privacy policy and security reasons, we have stopped uploading of images from 14/3/2025.</p>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo-placeholder">
+                <!-- Space for your logo -->
+                <span class="app-name">eFood<span class="heart">♥</span>Donation</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#search" class="nav-link">Search</a></li>
+                <li class="nav-item"><a href="#upload" class="nav-link">Upload</a></li>
+                <li class="nav-item"><a href="#info" class="nav-link">Info</a></li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>   
+
+    <!-- Hero Section with Search -->
+    <section id="search" class="hero">
+        <div class="hero-background">
+            <div class="video-background">
+                <video autoplay muted loop id="bgVideo">
+                    <source src="background.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">End Hunger, Reduce Food Wastage</h1>
+            <p class="hero-subtitle">Connecting surplus food with those who need it most</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by area or city...">
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Search Results Section -->
+    <section id="results" class="results-section">
+        <div class="section-header">
+            <h2>Search Results</h2>
+            <div class="underline"></div>
+        </div>
+        <div id="resultsContainer" class="results-container">
+            <!-- Results will be displayed here -->
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>Search for locations to see results</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section id="upload" class="upload-section">
+                <div class="upload-overlay">
+            <div class="section-header">
+                <h2>Upload Location Data</h2>
+                <div class="underline"></div>
+            </div>
+            <form id="locationForm" class="upload-form">
+                <div class="form-group">
+                    <label for="areaName">Area Name*</label>
+                    <input type="text" id="areaName" required>
+                </div>
+                <div class="form-group">
+                    <label for="cityName">City Name*</label>
+                    <input type="text" id="cityName" required>
+                </div>
+                <div class="form-group">
+                    <label for="peopleCount">Number of People*</label>
+                    <input type="number" id="peopleCount" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="gpsLink">Google GPS Location Link*</label>
+                    <input type="url" id="gpsLink" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="landmark">Landmark</label>
+                    <input type="text" id="landmark">
+                </div>
+                <div class="form-group">
+                    <label for="imageUpload">Images</label>
+                    <div class="image-upload-box" id="imageUploadBox">
+                        <i class="fas fa-camera"></i>
+                        <span>Click to upload image</span>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
+                <button type="submit" class="submit-btn">Submit Location</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section id="info" class="info-section">
+        <div class="section-header">
+            <h2>Food Scarcity in India</h2>
+            <div class="underline"></div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon hunger-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3>Hunger Deaths</h3>
+                <p class="stat-number">3,000+</p>
+                <p class="stat-desc">people die daily from hunger-related causes</p>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon waste-icon">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <h3>Food Wasted</h3>
+                <p class="stat-number">67 Million</p>
+                <p class="stat-desc">tons of food wasted annually in India</p>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon child-icon">
+                    <i class="fas fa-child"></i>
+                </div>
+                <h3>Malnourished Children</h3>
+                <p class="stat-number">33%</p>
+                <p class="stat-desc">of world's malnourished children are in India</p>
+            </div>
+        </div>
+        
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="wasteChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="hungerChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="references">
+            <h3>References</h3>
+            <ul>
+                <li>United Nations World Food Programme</li>
+                <li>Food and Agriculture Organization (FAO)</li>
+                <li>Global Hunger Index 2023</li>
+                <li>Indian Ministry of Consumer Affairs, Food & Public Distribution</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="app-name">eFood<span class="heart">♥</span>Donation</span>
+                <p>Connecting compassion with need</p>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#search">Search</a></li>
+                    <li><a href="#upload">Upload</a></li>
+                    <li><a href="#info">Statistics</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p><i class="fas fa-envelope"></i> shaikroshan74285@gmail.com</p>
+                <div class="social-icons">
+                    <a href="shaikroshan74285@gmail.com"><i class="fas fa-envelope"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>Design with <span class="heart">♥</span> by eFoodDonation | &copy; 2025 All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

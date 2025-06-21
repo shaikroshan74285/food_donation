@@ -570,11 +570,6 @@ section {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.upload-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.8rem;
-}
 .section-header h2 {
     color: white;
     font-size: 2rem;
@@ -588,6 +583,12 @@ section {
     background-color: var(--primary-color);
     margin: 0 auto 2rem auto;
     border-radius: 2px;
+}
+
+.upload-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.8rem;
 }
 
 .form-group {

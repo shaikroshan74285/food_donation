@@ -584,7 +584,7 @@ section {
     display: block;
     margin-bottom: 0.6rem;
     font-weight: 500;
-    color: #eee;
+    color: #ee;
     transition: color 0.3s ease;
 }
 
@@ -665,7 +665,7 @@ section {
     grid-column: 1 / -1;
     padding: 1.1rem;
     background: linear-gradient(to right, var(--primary-color), #3a9a40);
-    color: rgb(255, 255, 255);
+    color: white;
     border: none;
     border-radius: 5px;
     font-size: 1.1rem;

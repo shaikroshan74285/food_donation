@@ -10,11 +10,6 @@ const firebaseConfig = {
     measurementId: "G-MRLZ0V85PJ"
 };
 
-// IMPORTANT SECURITY NOTE:
-// Exposing your apiKey directly in client-side code is generally okay for Firebase Realtime Database/Firestore
-// if you have proper security rules set up. However, be mindful of this.
-// Consider using Firebase App Check for enhanced security.
-
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
@@ -311,8 +306,22 @@ function animateCountUp(element, target, duration) {
     requestAnimationFrame(updateCount);
 }
 
-// Form submission
-locationForm.addEventListener('submit', (e) => {
+// Check if GPS URL exists in Firebase
+function checkGpsLinkExists(gpsLink) {
+    return new Promise((resolve) => {
+        database.ref('locations').orderByChild('gpsLink').equalTo(gpsLink).once('value')
+            .then(snapshot => {
+                resolve(snapshot.exists());
+            })
+            .catch(error => {
+                console.error('Error checking GPS link:', error);
+                resolve(false); // Proceed as if not found in case of error
+            });
+    });
+}
+
+// Form submission with GPS URL check
+locationForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const areaName = document.getElementById('areaName').value.trim();
     const cityName = document.getElementById('cityName').value.trim();
@@ -321,6 +330,7 @@ locationForm.addEventListener('submit', (e) => {
     const description = document.getElementById('description').value.trim();
     const landmark = document.getElementById('landmark').value.trim();
 
+    // Validate required fields
     if (!areaName || !cityName || !gpsLink || isNaN(peopleCount) || peopleCount <= 0) {
         showNotification('Please fill in all required fields with valid data (People Count must be positive).', 'error');
         return;
@@ -330,39 +340,48 @@ locationForm.addEventListener('submit', (e) => {
         return;
     }
 
-    const newLocation = {
-        areaName,
-        cityName,
-        peopleCount,
-        gpsLink,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    };
-    if (description) newLocation.description = description;
-    if (landmark) newLocation.landmark = landmark;
-
     const submitBtn = locationForm.querySelector('.submit-btn');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
     submitBtn.classList.add('submitting');
 
-    database.ref('locations').push(newLocation)
-        .then(() => {
-            showNotification('Location data submitted successfully! Thank you!', 'success');
-            locationForm.reset();
-            if (imageUploadBox) {
-                const uploadText = imageUploadBox.querySelector('p');
-                if (uploadText) uploadText.textContent = 'Click to add image (Optional)';
-            }
-        })
-        .catch(error => {
-            console.error('Error submitting data:', error);
-            showNotification('Submission Error: ' + error.message, 'error');
-        })
-        .finally(() => {
+    try {
+        // Check if GPS URL already exists
+        const gpsLinkExists = await checkGpsLinkExists(gpsLink);
+        if (gpsLinkExists) {
+            showNotification('This Google Maps URL already exists in the database.', 'error');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit Location';
             submitBtn.classList.remove('submitting');
-        });
+            return;
+        }
+
+        // Proceed with saving new location
+        const newLocation = {
+            areaName,
+            cityName,
+            peopleCount,
+            gpsLink,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        if (description) newLocation.description = description;
+        if (landmark) newLocation.landmark = landmark;
+
+        await database.ref('locations').push(newLocation);
+        showNotification('Location data submitted successfully! Thank you!', 'success');
+        locationForm.reset();
+        if (imageUploadBox) {
+            const uploadText = imageUploadBox.querySelector('p');
+            if (uploadText) uploadText.textContent = 'Click to add image (Optional)';
+        }
+    } catch (error) {
+        console.error('Error submitting data:', error);
+        showNotification('Submission Error: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Location';
+        submitBtn.classList.remove('submitting');
+    }
 });
 
 // Notification function
